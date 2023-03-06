@@ -1,7 +1,10 @@
+#import libraries
+
 from time import sleep
 from sense_hat import SenseHat
 from datetime import datetime
 
+#set variables and styles
 sense = SenseHat()
 
 YES = "up"
@@ -12,24 +15,30 @@ Temp_Colors = [[255, 0, 0], [0, 0, 0]]
 Press_Colors = [[0, 255, 0], [0, 0, 0]]
 Humi_Colors = [[0, 0, 255], [0, 0, 0]]
 
+#define functions
 
+#date function
 def get_datetime():
     return datetime.now().strftime("%m/%d/%Y,%H:%M:%S,")
 
-
+#joystick function
 def JoyStick_Event():
     event = sense.stick.wait_for_event(emptybuffer=True)
     return event.action, event.direction
 
-
+#reading temperature function
 def Temperature():
+    #variables and creation of list where readings will be saved and exported to the txt file
     Measurements = []
 
     Measure_Count = 0
 
+    #function showing options
     sense.show_message(MEASURE_TEXT, text_colour=Temp_Colors[0], scroll_speed=0.05, back_colour=Temp_Colors[1])
     sense.show_letter("0", text_colour=Temp_Colors[0], back_colour=Temp_Colors[1])
     accepted = False
+    
+    #loop where user chooses options and number of measurements taken
     while not accepted:
         event = JoyStick_Event()
         if event[1] == "left" and Measure_Count > 0 and event[0] != "pressed":
@@ -43,15 +52,19 @@ def Temperature():
         elif event[1] == NO:
             return
     sleep(1)
+    
+    #astroPi taking temeprature measurement 
     for _ in range(Measure_Count):
         temp = sense.get_temperature()
         sense.show_message(str(round(temp, 2)) + " C", text_colour=Temp_Colors[0], back_colour=Temp_Colors[1],
                            scroll_speed=0.04)
         Measurements.append(get_datetime() + str((round(temp, 2))))
         sleep(1)
+    #function to count average temperature of measurements taken
     if len(Measurements) != 0:
         avg = sum(map(lambda x: float(x.split(",")[2]), Measurements)) / len(Measurements)
         sense.show_message("Average: ", text_colour=Temp_Colors[0], back_colour=Temp_Colors[1], scroll_speed=0.05)
+        #statements to show appropriate message to the user
         if avg >= 20:
             sense.show_message(str(avg) + " C" + " HOT", text_colour=Temp_Colors[0], back_colour=Temp_Colors[1],
                                scroll_speed=0.05)
@@ -64,6 +77,7 @@ def Temperature():
             sense.show_message(str(avg) + " C" + " COLD", text_colour=Temp_Colors[0], back_colour=Temp_Colors[1],
                                scroll_speed=0.05)
 
+    #option to save the measurement and exporting this data to the txt file
     if len(Measurements) != 0:
         sense.show_message("Save?", text_colour=Temp_Colors[0], back_colour=Temp_Colors[1], scroll_speed=0.05)
         answer = JoyStick_Event()
@@ -155,7 +169,9 @@ def Humidity():
             sense.show_message("Saved", text_colour=Humi_Colors[0], back_colour=Humi_Colors[1], scroll_speed=0.05)
     return
 
+#define functions for use of joystick
 
+#functions to set the number of measurements for joystick movements
 def add(last):
     if last == 2:
         return 0
@@ -176,7 +192,8 @@ def display(opt):
         sense.show_letter("P", text_colour=Press_Colors[0], back_colour=Press_Colors[1])
     elif opt == "H":
         sense.show_letter("H", text_colour=Humi_Colors[0], back_colour=Humi_Colors[1])
-
+        
+#set joystick options and movements within the menu 
 def menu():
     Functions = [Temperature, Pressure, Humidity]
     Options = ["T", "P", "H"]
