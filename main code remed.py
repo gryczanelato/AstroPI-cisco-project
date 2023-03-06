@@ -184,7 +184,8 @@ def sub(last):
         return 2
     else:
         return last - 1
-
+    
+#styles of displayed functions
 def display(opt):
     if opt == "T":
         sense.show_letter("T", text_colour=Temp_Colors[0], back_colour=Temp_Colors[1])
